@@ -1,5 +1,6 @@
 package com.tpspringboot.apirestclientcommande.Commande.modeleCO;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.tpspringboot.apirestclientcommande.Client.modeleCL.Client;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class Commande {
 
     @ManyToOne
     @JoinColumn(name="client_id" , nullable = false)
+    @JsonBackReference
     private Client client ;
 
 

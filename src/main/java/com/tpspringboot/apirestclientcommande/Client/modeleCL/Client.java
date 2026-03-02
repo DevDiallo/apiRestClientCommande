@@ -1,15 +1,13 @@
 package com.tpspringboot.apirestclientcommande.Client.modeleCL;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.tpspringboot.apirestclientcommande.Commande.modeleCO.Commande;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import org.springframework.stereotype.Component;
-
+import java.util.ArrayList;
 import java.util.List;
 
-
-@Component
 @Data
 @Entity
 public class Client {
@@ -19,10 +17,9 @@ public class Client {
     private String nom ;
     @Column(nullable = false)
     private String email ;
-    /*
-    @OneToMany(mappedBy = "client")
-    private List<Commande> commandes;
-     */
 
+    @OneToMany(mappedBy = "client" , cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Commande> commandes = new ArrayList<>() ;
 
 }

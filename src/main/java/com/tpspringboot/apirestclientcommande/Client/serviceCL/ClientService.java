@@ -2,6 +2,8 @@ package com.tpspringboot.apirestclientcommande.Client.serviceCL;
 
 import com.tpspringboot.apirestclientcommande.Client.modeleCL.Client;
 import com.tpspringboot.apirestclientcommande.Client.repositoryCL.ClientRepository;
+import com.tpspringboot.apirestclientcommande.Exceptions.RessourceAlreadyExist;
+import com.tpspringboot.apirestclientcommande.Exceptions.RessourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +22,7 @@ public class ClientService {
         if (client.isPresent()){
             return  ResponseEntity.ok(client.get()) ;
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build() ;
+            throw new RessourceNotFoundException("Error getClient ! Client not found");
         }
     }
 
@@ -36,7 +38,7 @@ public class ClientService {
     public ResponseEntity<Client> saveClient(Client client){
         Optional<Client> existingClient = clientRepository.findByEmail(client.getEmail()) ;
         if (existingClient.isPresent()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            throw new RessourceAlreadyExist("Error saveClient ! Ressource Already Exist") ;
         } else {
             return ResponseEntity.ok(clientRepository.save(client)) ;
         }
@@ -49,7 +51,7 @@ public class ClientService {
             c.setNom(client.getNom());
             return ResponseEntity.ok(clientRepository.save(c)) ;
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build() ;
+            throw new RessourceNotFoundException("Error updateClient") ;
         }
     }
 

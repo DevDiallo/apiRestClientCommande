@@ -5,12 +5,15 @@ import com.tpspringboot.apirestclientcommande.Client.repositoryCL.ClientReposito
 import com.tpspringboot.apirestclientcommande.Client.serviceCL.ClientService;
 import com.tpspringboot.apirestclientcommande.Commande.modeleCO.Commande;
 import com.tpspringboot.apirestclientcommande.Commande.repositoryCO.CommandeRepository;
+import com.tpspringboot.apirestclientcommande.Exceptions.RessourceAlreadyExist;
+import com.tpspringboot.apirestclientcommande.Exceptions.RessourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -31,17 +34,22 @@ public class CommandeService {
         if (existingCommande.isPresent()){
             return ResponseEntity.ok(existingCommande.get()) ;
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build() ;
+            throw new RessourceNotFoundException("Error getCommande ! Ressource not Found");
         }
     }
 
     public ResponseEntity<Commande> saveCommande(Long clientId, Commande commande) {
         Optional<Client> existingClient = clientRepository.findById(clientId) ;
         if(existingClient.isPresent()){
-            commande.setClient(existingClient.get());
+            Client c = existingClient.get() ;
+            // mettre à jour l'attribut List<Commande> commandes de l'entité Client
+            c.getCommandes().add(commande) ;
+            // mettre à jour l'entité commande
+            commande.setClient(c);
+
             return ResponseEntity.ok(commandeRepository.save(commande)) ;
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build() ;
+            throw new RessourceNotFoundException("Error saveCommande ! customer_id does not exist ");
         }
     }
 
@@ -54,13 +62,13 @@ public class CommandeService {
 
             return ResponseEntity.ok(commandeRepository.save(c)) ;
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build() ;
+        throw new RessourceNotFoundException("Error updateCommande ! Ressource not Found") ;
 
     }
 
     public ResponseEntity<Void> deleteCommande(Long id) {
         if (!commandeRepository.existsById(id)){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build() ;
+            throw new RessourceNotFoundException("Error deleteCommande ! Ressource not Found ") ;
         }
         commandeRepository.deleteById(id);
         return ResponseEntity.noContent().build() ;
