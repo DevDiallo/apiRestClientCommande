@@ -13,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -53,9 +55,16 @@ public class AuthController {
             ) ;
             if (authentication.isAuthenticated()){
                 String userName = authentication.getName() ;
+                // 🔥 Récupérer les rôles
+                List<String> roles = authentication.getAuthorities()
+                        .stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList();
                 Map<String,Object> authData = new HashMap<>() ;
-                authData.put("token" , jwtUtils.generateToken(userName)) ;
+                authData.put("token" , jwtUtils.generateToken(userName , roles)) ;
                 authData.put("type" , "Bearer") ;
+                authData.put("Roles" , roles) ;
+
                 return ResponseEntity.ok(authData) ;
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Username and Password not Correct !") ;
