@@ -2,15 +2,18 @@ package com.tpspringboot.apirestclientcommande.Client.configuration;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Jwts ;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -23,9 +26,10 @@ public class JwtUtils {
     @Value("${app.expiration-time}")
     private long expirationTime ;
 
-    public String generateToken(String username){
+    public String generateToken(String username , List<String> roles){
         Map<String , Object> claims = new HashMap<>() ;
-        return createToken(claims , username) ; 
+        claims.put("Roles" ,roles) ;
+        return createToken(claims , username) ;
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
@@ -40,15 +44,14 @@ public class JwtUtils {
     }
 
     private Key getSignKey() {
-        byte[] keyBytes = secretKey.getBytes();
-        return new SecretKeySpec(keyBytes , SignatureAlgorithm.HS256.getJcaName());
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
     // Validation du token lorsque User se connecte
 
     public Boolean validateToken(String token , UserDetails userDetails){
-        String usernanme = extractUsername(token) ;
-        return (usernanme.equals(userDetails.getUsername()) && !isTokenExpired(token)) ;
+        String username = extractUsername(token) ;
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token)) ;
     }
 
     private boolean isTokenExpired(String token) {
@@ -60,19 +63,25 @@ public class JwtUtils {
     }
 
     public String extractUsername(String token) {
-        return extractClaim(token , Claims::getSubject) ; 
+        return extractClaim(token , Claims::getSubject) ;
+    }
+
+    public List<String> extractRole(String token){
+        final Claims claims = extractAllClaims(token) ;
+        return claims.get("Roles", List.class) ;
     }
 
     private <T> T extractClaim(String token, Function<Claims,T> claimsResolver) {
         final Claims claims = extractAllClaims(token) ;
-        return claimsResolver.apply(claims) ; 
+        return claimsResolver.apply(claims) ;
     }
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(getSignKey())
+                .build()
                 .parseClaimsJws(token)
-                .getBody() ; 
+                .getBody() ;
     }
 
 

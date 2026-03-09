@@ -2,6 +2,7 @@ package com.tpspringboot.apirestclientcommande.Client.controllerCL;
 
 import com.tpspringboot.apirestclientcommande.Client.configuration.JwtUtils;
 import com.tpspringboot.apirestclientcommande.Client.modeleCL.User;
+import com.tpspringboot.apirestclientcommande.Client.repositoryCL.CrudUserRepository;
 import com.tpspringboot.apirestclientcommande.Client.repositoryCL.UserRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -13,20 +14,21 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {
+
 
     private final UserRepository userRepository ;
     private final PasswordEncoder passwordEncoder ;
@@ -39,6 +41,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Username is already in use !") ;
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole("ROLE_USER"); // toutes les connexions ont un role USER
         return ResponseEntity.ok(userRepository.save(user)) ;
     }
 
@@ -53,9 +56,16 @@ public class AuthController {
             ) ;
             if (authentication.isAuthenticated()){
                 String userName = authentication.getName() ;
+                // 🔥 Récupérer les rôles
+                List<String> roles = authentication.getAuthorities()
+                        .stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList();
                 Map<String,Object> authData = new HashMap<>() ;
-                authData.put("token" , jwtUtils.generateToken(userName)) ;
+                authData.put("token" , jwtUtils.generateToken(userName , roles)) ;
                 authData.put("type" , "Bearer") ;
+                authData.put("Roles" , roles) ;
+
                 return ResponseEntity.ok(authData) ;
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Username and Password not Correct !") ;
@@ -64,5 +74,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Username and Correct !") ;
         }
     }
+
 
 }
