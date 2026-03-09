@@ -2,11 +2,13 @@ package com.tpspringboot.apirestclientcommande.Client.configuration;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Jwts ;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.Date;
@@ -42,8 +44,7 @@ public class JwtUtils {
     }
 
     private Key getSignKey() {
-        byte[] keyBytes = secretKey.getBytes();
-        return new SecretKeySpec(keyBytes , SignatureAlgorithm.HS256.getJcaName());
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
     // Validation du token lorsque User se connecte
@@ -62,7 +63,7 @@ public class JwtUtils {
     }
 
     public String extractUsername(String token) {
-        return extractClaim(token , Claims::getSubject) ; 
+        return extractClaim(token , Claims::getSubject) ;
     }
 
     public List<String> extractRole(String token){
@@ -72,14 +73,15 @@ public class JwtUtils {
 
     private <T> T extractClaim(String token, Function<Claims,T> claimsResolver) {
         final Claims claims = extractAllClaims(token) ;
-        return claimsResolver.apply(claims) ; 
+        return claimsResolver.apply(claims) ;
     }
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(getSignKey())
+                .build()
                 .parseClaimsJws(token)
-                .getBody() ; 
+                .getBody() ;
     }
 
 

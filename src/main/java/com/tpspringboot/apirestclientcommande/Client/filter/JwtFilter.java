@@ -27,12 +27,6 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils ;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getServletPath();
-        // ✅ Ignorer login et register
-        if (path.startsWith("/api/auth/")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         final String authHeader = request.getHeader("Authorization") ;
         String username = null ;
@@ -49,7 +43,13 @@ public class JwtFilter extends OncePerRequestFilter {
             if (jwtUtils.validateToken(jwt , userDetails)){
                 // 🔥 Convertir les rôles en Authorities
                 List<SimpleGrantedAuthority> authorities = roles.stream()
-                        .map(SimpleGrantedAuthority::new)
+                        .map(role -> {
+                            // Ajouter le préfixe ROLE_ si pas déjà présent
+                            if (!role.startsWith("ROLE_")) {
+                                return new SimpleGrantedAuthority("ROLE_" + role);
+                            }
+                            return new SimpleGrantedAuthority(role);
+                        })
                         .collect(Collectors.toList());
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(userDetails ,

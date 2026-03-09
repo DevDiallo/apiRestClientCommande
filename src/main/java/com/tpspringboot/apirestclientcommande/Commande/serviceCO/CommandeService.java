@@ -1,26 +1,23 @@
 package com.tpspringboot.apirestclientcommande.Commande.serviceCO;
 
-import com.tpspringboot.apirestclientcommande.Client.modeleCL.Client;
-import com.tpspringboot.apirestclientcommande.Client.repositoryCL.ClientRepository;
-import com.tpspringboot.apirestclientcommande.Client.serviceCL.ClientService;
+import com.tpspringboot.apirestclientcommande.Client.modeleCL.User;
+import com.tpspringboot.apirestclientcommande.Client.repositoryCL.CrudUserRepository;
 import com.tpspringboot.apirestclientcommande.Commande.modeleCO.Commande;
 import com.tpspringboot.apirestclientcommande.Commande.repositoryCO.CommandeRepository;
-import com.tpspringboot.apirestclientcommande.Exceptions.RessourceAlreadyExist;
 import com.tpspringboot.apirestclientcommande.Exceptions.RessourceNotFoundException;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
+@Data
 @Service
 public class CommandeService {
 
     @Autowired
-    ClientRepository clientRepository;
+    private CrudUserRepository crudUserRepository ;
 
     @Autowired
     CommandeRepository commandeRepository ;
@@ -38,14 +35,14 @@ public class CommandeService {
         }
     }
 
-    public ResponseEntity<Commande> saveCommande(Long clientId, Commande commande) {
-        Optional<Client> existingClient = clientRepository.findById(clientId) ;
-        if(existingClient.isPresent()){
-            Client c = existingClient.get() ;
-            // mettre à jour l'attribut List<Commande> commandes de l'entité Client
-            c.getCommandes().add(commande) ;
+    public ResponseEntity<Commande> saveCommande(Long userId, Commande commande) {
+        Optional<User> existingUser = crudUserRepository.findById(userId) ;
+        if(existingUser.isPresent()){
+            User u = existingUser.get() ;
+            // mettre à jour l'attribut List<Commande> commandes de l'entité User
+            u.getCommandes().add(commande) ;
             // mettre à jour l'entité commande
-            commande.setClient(c);
+            commande.setUser(u);
 
             return ResponseEntity.ok(commandeRepository.save(commande)) ;
         } else {
@@ -57,8 +54,8 @@ public class CommandeService {
         Optional<Commande> existingCommande = commandeRepository.findById(id) ;
         if (existingCommande.isPresent()){
             Commande c = existingCommande.get() ;
-            c.setProduit(commande.getProduit());
-            c.setQuantite(commande.getQuantite());
+            c.setCommandeProduits(commande.getCommandeProduits());
+            c.setUser(commande.getUser());
 
             return ResponseEntity.ok(commandeRepository.save(c)) ;
         }

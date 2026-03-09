@@ -23,14 +23,14 @@ public class CommandeController {
         return commandeService.getCommande(id) ;
     }
 
-    @PostMapping("/clients/{clientId}/commandes")
-    public ResponseEntity<Commande> saveCommande(@PathVariable Long clientId , @RequestBody Commande commande){
-        return commandeService.saveCommande(clientId , commande) ;
+    @PostMapping("/commandes/{userId}")
+    public ResponseEntity<Commande> saveCommande(@PathVariable Long userId , @RequestBody Commande commande){
+        return commandeService.saveCommande(userId , commande) ;
     }
 
-    @PutMapping("/clients/commandes/{id}")
-    public ResponseEntity<Commande> updateCommande(@PathVariable Long id , @RequestBody Commande commande){
-        return commandeService.updateCommande(id , commande) ;
+    @PutMapping("/users/commandes/{comId}")
+    public ResponseEntity<Commande> updateCommande(@PathVariable Long comId , @RequestBody Commande commande){
+        return commandeService.updateCommande(comId , commande) ;
     }
 
     @DeleteMapping("/commandes/{id}")

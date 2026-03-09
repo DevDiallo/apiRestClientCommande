@@ -1,7 +1,12 @@
 package com.tpspringboot.apirestclientcommande.Client.modeleCL;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tpspringboot.apirestclientcommande.Commande.modeleCO.Commande;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -13,11 +18,16 @@ public class User {
     private Long id ;
     private String username ;
     private String password ;
-    @Enumerated(EnumType.STRING)
-    private Role role ;
-
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String role ;
+    /*
     public enum Role {
         ROLE_USER ,
         ROLE_ADMIN
     }
+     */
+    @OneToMany(mappedBy = "user" , cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Commande> commandes ;
+
 }

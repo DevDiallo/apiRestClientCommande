@@ -1,26 +1,31 @@
 package com.tpspringboot.apirestclientcommande.Commande.modeleCO;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.tpspringboot.apirestclientcommande.Client.modeleCL.Client;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.tpspringboot.apirestclientcommande.Client.modeleCL.User;
+import com.tpspringboot.apirestclientcommande.produit.modeleProd.Commande_produit;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-@Component
+import java.util.ArrayList;
+import java.util.List;
+
+
 @Data
 @Entity
 public class Commande {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id ;
-    private String produit ;
-    private Integer quantite ;
 
     @ManyToOne
-    @JoinColumn(name="client_id" , nullable = false)
+    @JoinColumn(name="user_id" , nullable = false)
     @JsonBackReference
-    private Client client ;
+    private User user;
+
+    @OneToMany(mappedBy = "commande" , cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "commande-commandeProduit")
+    private List<Commande_produit> commandeProduits = new ArrayList<>() ;
 
 
 }
