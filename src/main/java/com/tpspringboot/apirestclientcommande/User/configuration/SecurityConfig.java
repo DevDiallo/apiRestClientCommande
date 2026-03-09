@@ -1,11 +1,11 @@
 // Partie Securité
 
-package com.tpspringboot.apirestclientcommande.Client.configuration;
+package com.tpspringboot.apirestclientcommande.User.configuration;
 
-import com.tpspringboot.apirestclientcommande.Client.filter.JwtFilter;
-import com.tpspringboot.apirestclientcommande.Client.modeleCL.User;
-import com.tpspringboot.apirestclientcommande.Client.repositoryCL.UserRepository;
-import com.tpspringboot.apirestclientcommande.Client.serviceCL.CustomUserDetailsService;
+import com.tpspringboot.apirestclientcommande.User.filter.JwtFilter;
+import com.tpspringboot.apirestclientcommande.User.modeleCL.User;
+import com.tpspringboot.apirestclientcommande.User.repositoryCL.UserRepository;
+import com.tpspringboot.apirestclientcommande.User.serviceCL.CustomUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;

@@ -2,7 +2,7 @@ package com.tpspringboot.apirestclientcommande.Commande.modeleCO;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.tpspringboot.apirestclientcommande.Client.modeleCL.User;
+import com.tpspringboot.apirestclientcommande.User.modeleCL.User;
 import com.tpspringboot.apirestclientcommande.produit.modeleProd.Commande_produit;
 import jakarta.persistence.*;
 import lombok.Data;

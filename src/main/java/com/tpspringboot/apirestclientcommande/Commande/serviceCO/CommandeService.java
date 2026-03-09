@@ -1,7 +1,7 @@
 package com.tpspringboot.apirestclientcommande.Commande.serviceCO;
 
-import com.tpspringboot.apirestclientcommande.Client.modeleCL.User;
-import com.tpspringboot.apirestclientcommande.Client.repositoryCL.CrudUserRepository;
+import com.tpspringboot.apirestclientcommande.User.modeleCL.User;
+import com.tpspringboot.apirestclientcommande.User.repositoryCL.CrudUserRepository;
 import com.tpspringboot.apirestclientcommande.Commande.modeleCO.Commande;
 import com.tpspringboot.apirestclientcommande.Commande.repositoryCO.CommandeRepository;
 import com.tpspringboot.apirestclientcommande.Exceptions.RessourceNotFoundException;

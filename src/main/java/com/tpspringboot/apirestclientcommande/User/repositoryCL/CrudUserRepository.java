@@ -1,10 +1,8 @@
-package com.tpspringboot.apirestclientcommande.Client.repositoryCL;
+package com.tpspringboot.apirestclientcommande.User.repositoryCL;
 
-import com.tpspringboot.apirestclientcommande.Client.modeleCL.User;
+import com.tpspringboot.apirestclientcommande.User.modeleCL.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface CrudUserRepository extends CrudRepository<User, Long> {

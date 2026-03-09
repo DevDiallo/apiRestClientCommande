@@ -1,13 +1,10 @@
-package com.tpspringboot.apirestclientcommande.Client.controllerCL;
+package com.tpspringboot.apirestclientcommande.User.controllerCL;
 
-import com.tpspringboot.apirestclientcommande.Client.configuration.JwtUtils;
-import com.tpspringboot.apirestclientcommande.Client.modeleCL.User;
-import com.tpspringboot.apirestclientcommande.Client.repositoryCL.CrudUserRepository;
-import com.tpspringboot.apirestclientcommande.Client.repositoryCL.UserRepository;
-import lombok.Data;
+import com.tpspringboot.apirestclientcommande.User.configuration.JwtUtils;
+import com.tpspringboot.apirestclientcommande.User.modeleCL.User;
+import com.tpspringboot.apirestclientcommande.User.repositoryCL.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")

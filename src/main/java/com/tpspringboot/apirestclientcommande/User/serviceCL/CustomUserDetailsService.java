@@ -1,9 +1,8 @@
-package com.tpspringboot.apirestclientcommande.Client.serviceCL;
+package com.tpspringboot.apirestclientcommande.User.serviceCL;
 
-import com.tpspringboot.apirestclientcommande.Client.modeleCL.User;
-import com.tpspringboot.apirestclientcommande.Client.repositoryCL.UserRepository;
+import com.tpspringboot.apirestclientcommande.User.modeleCL.User;
+import com.tpspringboot.apirestclientcommande.User.repositoryCL.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
