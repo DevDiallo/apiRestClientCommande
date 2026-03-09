@@ -1,7 +1,7 @@
-package com.tpspringboot.apirestclientcommande.Client.filter;
+package com.tpspringboot.apirestclientcommande.User.filter;
 
-import com.tpspringboot.apirestclientcommande.Client.configuration.JwtUtils;
-import com.tpspringboot.apirestclientcommande.Client.serviceCL.CustomUserDetailsService;
+import com.tpspringboot.apirestclientcommande.User.configuration.JwtUtils;
+import com.tpspringboot.apirestclientcommande.User.serviceCL.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,4 +1,4 @@
-package com.tpspringboot.apirestclientcommande.Client.modeleCL;
+package com.tpspringboot.apirestclientcommande.User.modeleCL;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;

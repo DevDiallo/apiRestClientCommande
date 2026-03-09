@@ -1,13 +1,12 @@
-package com.tpspringboot.apirestclientcommande.Client.controllerCL;
+package com.tpspringboot.apirestclientcommande.User.controllerCL;
 
-import com.tpspringboot.apirestclientcommande.Client.modeleCL.User;
-import com.tpspringboot.apirestclientcommande.Client.repositoryCL.CrudUserRepository;
+import com.tpspringboot.apirestclientcommande.User.modeleCL.User;
+import com.tpspringboot.apirestclientcommande.User.repositoryCL.CrudUserRepository;
 import com.tpspringboot.apirestclientcommande.Exceptions.RessourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
