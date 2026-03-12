@@ -26,7 +26,7 @@ public class ProduitService {
     }
 
     public Optional<Produit> updateProduit(Long id , Produit produit){
-        Optional<Produit> existingProduit = getProduit(id) ;
+        Optional<Produit> existingProduit = produitRepository.findById(id) ;
         if (existingProduit.isPresent()){
             Produit p = existingProduit.get() ;
             p.setNom(produit.getNom());
