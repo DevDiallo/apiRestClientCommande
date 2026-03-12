@@ -27,7 +27,7 @@ public class ComProdService {
     }
 
     public Optional<Commande_produit> updateComProd(Long id , Commande_produit commandeProduit){
-        Optional<Commande_produit> existingComProd = getComProd(id) ;
+        Optional<Commande_produit> existingComProd = comProdRepository.findById(id) ;
         if (existingComProd.isPresent()){
             Commande_produit ComProd = existingComProd.get() ;
             ComProd.setQuantite(commandeProduit.getQuantite());

@@ -20,7 +20,7 @@ public class CommandeService {
     private CrudUserRepository crudUserRepository ;
 
     @Autowired
-    CommandeRepository commandeRepository ;
+    private CommandeRepository commandeRepository ;
 
     public Iterable<Commande> getCommandes(){
         return commandeRepository.findAll() ;
