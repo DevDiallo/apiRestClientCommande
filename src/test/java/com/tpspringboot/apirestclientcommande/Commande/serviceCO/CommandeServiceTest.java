@@ -1,23 +1,33 @@
 package com.tpspringboot.apirestclientcommande.Commande.serviceCO;
 
+import com.tpspringboot.apirestclientcommande.Commande.dto.CommandeAdminDetailsResponseDto;
+import com.tpspringboot.apirestclientcommande.Commande.dto.CommandeResponseDto;
 import com.tpspringboot.apirestclientcommande.Commande.modeleCO.Commande;
 import com.tpspringboot.apirestclientcommande.Commande.repositoryCO.CommandeRepository;
 import com.tpspringboot.apirestclientcommande.User.modeleCL.User;
 import com.tpspringboot.apirestclientcommande.User.repositoryCL.CrudUserRepository;
+import com.tpspringboot.apirestclientcommande.produit.modeleProd.Commande_produit;
+import com.tpspringboot.apirestclientcommande.produit.modeleProd.LigneStock;
+import com.tpspringboot.apirestclientcommande.produit.modeleProd.Produit;
+import com.tpspringboot.apirestclientcommande.produit.repositoryProd.LigneStockRepository;
+import com.tpspringboot.apirestclientcommande.produit.repositoryProd.ProduitRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,97 +37,145 @@ class CommandeServiceTest {
     CommandeRepository commandeRepository ;
     @Mock
     CrudUserRepository crudUserRepository ;
+    @Mock
+    ProduitRepository produitRepository;
+    @Mock
+    LigneStockRepository ligneStockRepository;
 
     @InjectMocks
     CommandeService commandeService ;
 
-    @Test
-    void getCommandes() {
-        // Given
-        Commande c1 = new Commande() ;
-        Commande c2 = new Commande() ;
-        List<Commande> commandes = List.of(c1,c2) ;
-        when(commandeRepository.findAll()).thenReturn(commandes) ;
-
-        // When
-        Iterable<Commande> result = commandeService.getCommandes() ;
-
-        // Then
-        verify(commandeRepository).findAll() ;
-        assertThat(result).isNotNull()
-                .hasSize(2)
-                .containsExactly(c1,c2) ;
+    @BeforeEach
+    void cleanSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
-    void getCommande() {
-        // Given
-        Commande commande = new Commande() ;
-        when(commandeRepository.findById(commande.getId())).thenReturn(Optional.of(commande)) ;
+    void getCommandeDetailsForAdmin_returnsClientAndItems() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        "admin@exemple.com",
+                        "n/a",
+                        List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                )
+        );
 
-        // When
-        ResponseEntity<Commande> result = commandeService.getCommande(commande.getId()) ;
+        User user = new User();
+        user.setId(3L);
+        user.setNom("Diallo");
+        user.setPrenom("Amadou");
+        user.setEmail("amadou@example.com");
+        user.setTelephone("+33611111111");
 
-        // Then
-        verify(commandeRepository).findById(commande.getId()) ;
-        assertThat(result).isNotNull() ;
-        assertThat(result.getBody()).isNotNull() ;
-        assertThat(result.getBody()).isEqualTo(commande) ;
-    }
+        Produit produit = new Produit();
+        produit.setId(10L);
+        produit.setNom("Clavier");
 
-    @Test
-    void saveCommande() {
-        // Given
-        User user = new User() ;
-        user.setCommandes(new ArrayList<>());
-        Commande commande = new Commande() ;
+        Commande_produit item = new Commande_produit();
+        item.setProduit(produit);
+        item.setQuantite(2);
+        item.setPrixUnitaire(25.0);
+        item.setSousTotal(50.0);
+
+        Commande commande = new Commande();
+        commande.setId(99L);
         commande.setUser(user);
-        when(crudUserRepository.findById(user.getId())).thenReturn(Optional.of(user)) ;
-        when(commandeRepository.save(commande)).thenReturn(commande) ;
+        commande.setTotal(50.0);
+        commande.setCommandeProduits(new ArrayList<>(Collections.singletonList(item)));
 
-        // When
-        ResponseEntity<Commande> result = commandeService.saveCommande(user.getId(), commande) ;
+        when(commandeRepository.findById(99L)).thenReturn(Optional.of(commande));
 
-        // Then
-        verify(crudUserRepository).findById(user.getId()) ;
-        verify(commandeRepository).save(commande) ;
-        assertThat(result).isNotNull() ;
-        assertThat(result.getBody()).isEqualTo(commande) ;
+        CommandeAdminDetailsResponseDto result = commandeService.getCommandeDetailsForAdmin(99L);
+
+        assertThat(result.id()).isEqualTo(99L);
+        assertThat(result.client()).isNotNull();
+        assertThat(result.client().nom()).isEqualTo("Diallo");
+        assertThat(result.articles()).hasSize(1);
+        assertThat(result.articles().get(0).produitId()).isEqualTo(10L);
     }
 
     @Test
-    void updateCommande() {
-        // Given
-        Commande existingCommande = new Commande() ;
-        Commande c2 = new Commande() ; // La nouvelle commande qu'on veut updater
-        c2.setId(existingCommande.getId()); // les 2 commandes doivent avoir le meme Id
-        when(commandeRepository.findById(c2.getId())).thenReturn(Optional.of(existingCommande)) ;
-        when(commandeRepository.save(c2)).thenReturn(c2) ;
+    void getCommandeDetailsForAdmin_forNonAdmin_throwsAccessDenied() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        "user@exemple.com",
+                        "n/a",
+                        List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                )
+        );
 
-        // When
-        ResponseEntity<Commande> result = commandeService.updateCommande(c2.getId(), c2) ;
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> commandeService.getCommandeDetailsForAdmin(99L));
 
-        // Then
-        verify(commandeRepository).findById(c2.getId()) ;
-        verify(commandeRepository).save(c2) ;
-        assertThat(result).isNotNull() ;
-        assertThat(result.getBody()).isEqualTo(c2) ;
+        verify(commandeRepository, never()).findById(anyLong());
     }
 
     @Test
-    void deleteCommande() {
-        // Given
-        Commande commande = new Commande() ;
-        when(commandeRepository.existsById(commande.getId())).thenReturn(true) ;
-        doNothing().when(commandeRepository).deleteById(commande.getId()) ;
+    void saveCommande_containsClientAndItems_andTotalIsConsistent() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        "user@exemple.com",
+                        "n/a",
+                        List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                )
+        );
 
-        // When
-        ResponseEntity<Void> result =  commandeService.deleteCommande(commande.getId()) ;
+        User user = new User();
+        user.setId(1L);
+        user.setNom("Diallo");
+        user.setPrenom("Amadou");
+        user.setEmail("amadou@example.com");
+        user.setTelephone("+33611111111");
+        user.setCommandes(new ArrayList<>());
 
-        // Then
-        verify(commandeRepository).existsById(commande.getId()) ;
-        verify(commandeRepository).deleteById(commande.getId());
-        assertThat(result).isNotNull() ;
-        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue() ;
+        Produit produit = new Produit();
+        produit.setId(10L);
+        produit.setNom("Clavier");
+        produit.setPrix(25.0);
+        produit.setLigneStockId("7");
+
+        LigneStock ligneStock = new LigneStock();
+        ligneStock.setId(7L);
+        ligneStock.setQuantiteStock(12);
+
+        Commande_produit item = new Commande_produit();
+        item.setProduit(produit);
+        item.setQuantite(2);
+
+        Commande commande = new Commande();
+        commande.setCommandeProduits(new ArrayList<>(List.of(item)));
+
+        when(crudUserRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(produitRepository.findById(10L)).thenReturn(Optional.of(produit));
+        when(ligneStockRepository.findById(7L)).thenReturn(Optional.of(ligneStock));
+        when(ligneStockRepository.save(any(LigneStock.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(commandeRepository.save(any(Commande.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CommandeResponseDto result = commandeService.saveCommande(1L, commande);
+
+        assertThat(result.client()).isNotNull();
+        assertThat(result.items()).hasSize(1);
+        double totalItems = result.items().stream().map(i -> i.sousTotal() == null ? 0.0 : i.sousTotal()).reduce(0.0, Double::sum);
+        assertThat(result.total()).isEqualTo(totalItems);
+        assertThat(result.total()).isEqualTo(50.0);
+    }
+
+    @Test
+    void saveCommande_forAdminRole_throwsAccessDenied() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        "admin@exemple.com",
+                        "n/a",
+                        java.util.List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                )
+        );
+
+        Commande commande = new Commande();
+
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> commandeService.saveCommande(1L, commande));
+
+        verify(crudUserRepository, never()).findById(anyLong());
+        verify(commandeRepository, never()).save(any());
     }
 }

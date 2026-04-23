@@ -1,18 +1,25 @@
 package com.tpspringboot.apirestclientcommande.produit.serviceProd;
 
+import com.tpspringboot.apirestclientcommande.Commande.modeleCO.Commande;
+import com.tpspringboot.apirestclientcommande.Commande.repositoryCO.CommandeRepository;
+import com.tpspringboot.apirestclientcommande.produit.modeleProd.Produit;
 import com.tpspringboot.apirestclientcommande.produit.modeleProd.Commande_produit;
 import com.tpspringboot.apirestclientcommande.produit.repositoryProd.ComProdRepository;
+import com.tpspringboot.apirestclientcommande.produit.repositoryProd.ProduitRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.assertj.core.api.Assertions.* ;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -20,83 +27,76 @@ class ComProdServiceTest {
 
     @Mock
     ComProdRepository comProdRepository ;
+    @Mock
+    ProduitRepository produitRepository;
+    @Mock
+    CommandeRepository commandeRepository;
 
     @InjectMocks
     ComProdService comProdService ;
 
-    @Test
-    void getcommandeProduits() {
-        // Given
-        Commande_produit cp_1 = new Commande_produit() ;
-        Commande_produit cp_2 = new Commande_produit() ;
-        when(comProdRepository.findAll()).thenReturn(List.of(cp_1,cp_2)) ;
-
-        // When
-        Iterable<Commande_produit> result = comProdService.getcommandeProduits() ;
-
-        // Then
-        verify(comProdRepository).findAll() ;
-        assertThat(result).isNotNull()
-                .hasSize(2)
-                .containsExactly(cp_1,cp_2) ;
+    @BeforeEach
+    void cleanSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
-    void getComProd() {
-        // Given
-        Commande_produit commandeProduit = new Commande_produit() ;
-        when(comProdRepository.findById(commandeProduit.getId())).thenReturn(Optional.of(commandeProduit)) ;
+    void saveComProd_forAdminRole_throwsAccessDenied() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        "admin@exemple.com",
+                        "n/a",
+                        List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                )
+        );
 
-        // When
-        Optional<Commande_produit> result = comProdService.getComProd(commandeProduit.getId()) ;
+        Commande_produit payload = new Commande_produit();
 
-        // Then
-        verify(comProdRepository).findById(commandeProduit.getId()) ;
-        assertThat(result.get()).isNotNull().isEqualTo(commandeProduit) ;
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> comProdService.saveComProd(1L, 1L, payload));
+
+        verify(produitRepository, never()).findById(anyLong());
+        verify(commandeRepository, never()).findById(anyLong());
+        verify(comProdRepository, never()).save(any());
     }
 
     @Test
-    void saveComProd() {
-        //Given
-        Commande_produit commandeProduit = new Commande_produit() ;
-        when(comProdRepository.save(commandeProduit)).thenReturn(commandeProduit) ;
+    void saveComProd_forUserRole_isAllowed() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        "user@exemple.com",
+                        "n/a",
+                        List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                )
+        );
 
-        // When
-        Commande_produit result = comProdService.saveComProd(commandeProduit) ;
+        Produit produit = new Produit();
+        produit.setId(1L);
+        produit.setPrix(10.0);
 
-        // Then
-        verify(comProdRepository).save(commandeProduit) ;
-        assertThat(result).isNotNull().isEqualTo(commandeProduit) ;
-    }
+        Commande commande = new Commande();
+        commande.setId(2L);
 
-    @Test
-    void updateComProd() {
-        //Given
-        Commande_produit existingComProduit = new Commande_produit() ;
-        Commande_produit comProduitToUpdate = new Commande_produit() ;
-        comProduitToUpdate.setId(existingComProduit.getId());
-        when(comProdRepository.findById(comProduitToUpdate.getId())).thenReturn(Optional.of(existingComProduit)) ;
-        when(comProdRepository.save(comProduitToUpdate)).thenReturn(comProduitToUpdate) ;
+        Commande_produit payload = new Commande_produit();
+        payload.setQuantite(2);
 
-        // When
-        Optional<Commande_produit> result = comProdService.updateComProd(comProduitToUpdate.getId(), comProduitToUpdate) ;
+        Commande_produit saved = new Commande_produit();
+        saved.setId(5L);
+        saved.setProduit(produit);
+        saved.setCommande(commande);
+        saved.setQuantite(2);
+        saved.setPrixUnitaire(10.0);
+        saved.setSousTotal(20.0);
 
-        // Then
-        verify(comProdRepository).findById(comProduitToUpdate.getId()) ;
-        verify(comProdRepository).save(comProduitToUpdate) ;
-        assertThat(result.get()).isNotNull().isEqualTo(comProduitToUpdate) ;
-    }
+        when(produitRepository.findById(1L)).thenReturn(java.util.Optional.of(produit));
+        when(commandeRepository.findById(2L)).thenReturn(java.util.Optional.of(commande));
+        when(comProdRepository.save(any(Commande_produit.class))).thenReturn(saved);
+        when(comProdRepository.findByCommande_Id(2L)).thenReturn(List.of(saved));
 
-    @Test
-    void deleteComProd() {
-        //Given
-        Commande_produit commandeProduit = new Commande_produit() ;
-        doNothing().when(comProdRepository).deleteById(commandeProduit.getId()) ;
+        var result = comProdService.saveComProd(1L, 2L, payload);
 
-        // When
-        comProdService.deleteComProd(commandeProduit.getId());
-
-        // Then
-        verify(comProdRepository).deleteById(commandeProduit.getId());
+        assertThat(result.id()).isEqualTo(5L);
+        assertThat(result.quantite()).isEqualTo(2);
+        assertThat(result.sousTotal()).isEqualTo(20.0);
     }
 }

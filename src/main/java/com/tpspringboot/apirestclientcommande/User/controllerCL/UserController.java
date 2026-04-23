@@ -1,39 +1,47 @@
 package com.tpspringboot.apirestclientcommande.User.controllerCL;
 
-import com.tpspringboot.apirestclientcommande.User.modeleCL.User;
-import com.tpspringboot.apirestclientcommande.User.repositoryCL.CrudUserRepository;
 import com.tpspringboot.apirestclientcommande.Exceptions.RessourceNotFoundException;
+import com.tpspringboot.apirestclientcommande.User.dto.UserResponseDto;
+import com.tpspringboot.apirestclientcommande.User.modeleCL.User;
 import com.tpspringboot.apirestclientcommande.User.serviceCL.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/")
+@RequestMapping({"/", "/api"})
 public class UserController {
 
-    private final UserService userService ;
+    private final UserService userService;
 
     @GetMapping("/users")
-    public ResponseEntity<?> getUsers(){
-        // on doit recuperer les utilisateur qui ont un role user
-        Iterable<User> users = userService.getUsersByRole() ;
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getUsers() {
+        return ResponseEntity.ok(userService.getUsersByRole());
+    }
 
-        return ResponseEntity.ok(users) ;
+    @GetMapping("/clients")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getClients() {
+        return ResponseEntity.ok(userService.getUsersByRole());
     }
 
     @PutMapping("/users/{userId}")
-    public ResponseEntity<?> updateUser(@PathVariable Long userId,@RequestBody User user){
-        Optional<User> updatedUser = userService.updateUser(userId,user) ;
-        if (updatedUser.isPresent()){
-
-            return ResponseEntity.ok(updatedUser.get()) ;
-        } else {
-            throw new RessourceNotFoundException("Attention l'utilisateur existe pas") ;
+    public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody User user) {
+        Optional<UserResponseDto> updatedUser = userService.updateUser(userId, user);
+        if (updatedUser.isPresent()) {
+            return ResponseEntity.ok(updatedUser.get());
         }
+        throw new RessourceNotFoundException("Attention l'utilisateur existe pas");
     }
 
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
 }

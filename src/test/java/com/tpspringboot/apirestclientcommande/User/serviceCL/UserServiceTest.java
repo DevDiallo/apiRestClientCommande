@@ -1,20 +1,18 @@
 package com.tpspringboot.apirestclientcommande.User.serviceCL;
 
+import com.tpspringboot.apirestclientcommande.User.dto.UserResponseDto;
 import com.tpspringboot.apirestclientcommande.User.modeleCL.User;
 import com.tpspringboot.apirestclientcommande.User.repositoryCL.CrudUserRepository;
-import com.tpspringboot.apirestclientcommande.User.repositoryCL.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.awt.*;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.assertj.core.api.Assertions.* ;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,13 +33,11 @@ public class UserServiceTest {
         when(crudUserRepository.findByRole("ROLE_USER")).thenReturn(users) ;
 
         // When
-        Iterable<User> result = userService.getUsersByRole();
+        List<UserResponseDto> result = userService.getUsersByRole();
 
         // Then
         verify(crudUserRepository).findByRole("ROLE_USER") ;
-        assertThat(result).isNotNull()
-                .hasSize(2)
-                .containsExactly(u1,u2) ;
+        assertThat(result).isNotNull().hasSize(2);
 
     }
 
@@ -52,11 +48,12 @@ public class UserServiceTest {
         when(crudUserRepository.findById(user.getId())).thenReturn(Optional.of(user)) ;
 
         // When
-        Optional<User> result = userService.getUser(user.getId()) ;
+        Optional<UserResponseDto> result = userService.getUser(user.getId()) ;
 
         // Then
         verify(crudUserRepository).findById(user.getId()) ;
-        assertThat(result.get()).isNotNull().isEqualTo(user);
+        assertThat(result).isPresent();
+        assertThat(result.get().id()).isEqualTo(user.getId());
     }
 
     @Test
@@ -66,15 +63,16 @@ public class UserServiceTest {
         User userToUpdate = new User() ;
         userToUpdate.setId(existingUser.getId());
         when(crudUserRepository.findById(userToUpdate.getId())).thenReturn(Optional.of(existingUser)) ;
-        when(crudUserRepository.save(userToUpdate)).thenReturn(userToUpdate) ;
+        when(crudUserRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Optional<User> result = userService.updateUser(userToUpdate.getId(), userToUpdate) ;
+        Optional<UserResponseDto> result = userService.updateUser(userToUpdate.getId(), userToUpdate) ;
 
         // Then
         verify(crudUserRepository).findById(userToUpdate.getId()) ;
-        verify(crudUserRepository).save(userToUpdate) ;
-        assertThat(result.get()).isNotNull().isEqualTo(userToUpdate) ;
+        verify(crudUserRepository).save(existingUser) ;
+        assertThat(result).isPresent();
+        assertThat(result.get().id()).isEqualTo(existingUser.getId());
     }
 
     @Test
