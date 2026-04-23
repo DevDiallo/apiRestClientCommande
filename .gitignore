@@ -1,4 +1,4 @@
-.gradle
+.gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
@@ -17,7 +17,7 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -34,3 +34,21 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### System files ###
+.DS_Store
+.gitattributes
+Thumbs.db
+
+### Gradle Build ###
+**/gradle-app.setting
+**/gradlew.log
+
+### Other generated files ###
+*.class
+*.jar
+*.war
+*.nar
+*.log
+*.zip
+*.tar.gz
